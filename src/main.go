@@ -27,7 +27,9 @@ func main() {
 	// Set up the Gin router
 	router := gin.Default()
 
+	
 	router.Use(middlewares.ResponseMiddleware())
+	router.Use(middlewares.RequestResponseLogger())
 
 	// Register all routes
 	routes.RegisterRoutes(router, db)
