@@ -3,7 +3,6 @@ package users
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -43,7 +42,6 @@ func (r *userRepository) GetUserByField(field, value string) (*User, error) {
 	}
 	query := "SELECT id, username, password, email FROM users WHERE " + field + " = $1 LIMIT 1"
 	row := r.db.QueryRow(context.Background(), query, value)
-	fmt.Println(row, field, value)
 	var user User
 	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Email)
 	if err != nil {

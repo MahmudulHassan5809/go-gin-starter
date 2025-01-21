@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-// RegisterHealthRoutes sets up health-check routes
+
 func RegisterAuthRoutes(r *gin.RouterGroup, db *pgxpool.Pool) {
 	passwordHandler := security.PasswordHandler{}
 	JwtHandler := security.JWTHandler{}

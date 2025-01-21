@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"errors"
 	"gin_starter/src/core/common"
+	"gin_starter/src/core/errors"
 	"gin_starter/src/core/security"
 	"gin_starter/src/modules/users"
 )
@@ -19,32 +19,32 @@ type authService struct {
 }
 
 func NewAuthService(repo users.UserRepository, PasswordHasher security.PasswordHandler, JwtHandler security.JWTHandler) AuthService {
-	return &authService{UserRepo: repo, PasswordHasher: PasswordHasher}
+	return &authService{UserRepo: repo, PasswordHasher: PasswordHasher, JwtHandler: JwtHandler,}
 }
 
 
 func (s *authService) LoginUser(req *LoginRequest) (*Tokens, error) {
 	user, err := s.UserRepo.GetUserByField("username", req.Username)
 	if err != nil || user == nil {
-		return nil, errors.New("invalid username or password")
+		return nil, errors.UnauthorizedError("invalid username or password")
 	}
 
 	if !s.PasswordHasher.VerifyPassword(user.Password, req.Password) {
-		return nil, errors.New("invalid username or password")
+		return nil, errors.UnauthorizedError("invalid username or password")
 	}
 
 	accessToken, err := security.JWTHandler.Encode(s.JwtHandler, "access", common.AccessTokenPayload{
 		Username: user.Username,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.InternalServerError("error generating access token")
 	}
 
 	refreshToken, err := security.JWTHandler.Encode(s.JwtHandler, "refresh", common.RefreshTokenPayload{
 		Username: user.Username,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.InternalServerError("error generating refresh token")
 	}
 
 	return &Tokens{
@@ -59,7 +59,7 @@ func (s *authService) RegisterUser(user *users.CreateUserRequest) error {
 		return err
 	}
 	if isUserExists != nil {
-		return errors.New("user with this username already exists")
+		return errors.BadRequestError("user with this username already exists")
 	}
 	
 	hashedPassword, err := s.PasswordHasher.Hash(user.Password)

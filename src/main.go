@@ -16,29 +16,22 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Warning: .env file not found, using system environment variables")
 	}
-
-	// Initialize the database
 	db, err := db.InitDB()
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 	defer db.Close()
 
-	// Set up the Gin router
 	router := gin.Default()
 
-	
-	router.Use(middlewares.ResponseMiddleware())
+	router.Use(middlewares.ErrorHandlingMiddleware())
 	router.Use(middlewares.RequestResponseLogger())
 
-	// Register all routes
 	routes.RegisterRoutes(router, db)
-	
 
-	// Start the server
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080" // Default port
+		port = "8080"
 	}
 	log.Printf("Starting server on port %s...", port)
 	if err := router.Run(":" + port); err != nil {
