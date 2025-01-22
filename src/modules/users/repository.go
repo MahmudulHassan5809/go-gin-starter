@@ -2,6 +2,7 @@ package users
 
 import (
 	"errors"
+	"gin_starter/src/core/repository"
 
 	"gorm.io/gorm"
 )
@@ -12,18 +13,21 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	db *gorm.DB
+	BaseRepo *repository.BaseRepository[User]
 }
+
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return &userRepository{
+		BaseRepo: repository.NewBaseRepository[User](db),
+	}
+}
+
 
 var validFields = map[string]bool{
 	"username": true,
 	"email":    true,
 }
 
-
-func NewUserRepository(db *gorm.DB) UserRepository {
-	return &userRepository{db: db}
-}
 
 
 func (r *userRepository) RegisterUser(user *RegisterUserRequest) error {
@@ -33,7 +37,7 @@ func (r *userRepository) RegisterUser(user *RegisterUserRequest) error {
 		Password: user.Password,
 		IsAdmin:  false,
 	}
-	if err := r.db.Create(&newUser).Error; err != nil {
+	if err := r.BaseRepo.Create(&newUser); err != nil { 
 		return err
 	}
 	return nil
@@ -44,13 +48,5 @@ func (r *userRepository) GetUserByField(field, value string) (*User, error) {
 	if !validFields[field] {
 		return nil, errors.New("invalid field name")
 	}
-	var user User
-	err := r.db.Where(field+" = ?", value).First(&user).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &user, nil
+	return r.BaseRepo.GetByField(field, value)
 }
