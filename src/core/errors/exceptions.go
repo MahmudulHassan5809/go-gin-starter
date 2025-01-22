@@ -7,10 +7,16 @@ type CustomError struct {
 	Status  int 
 	Msg     string
 	Code    string
+	ValidationErrors interface{}
 }
 
 func (e *CustomError) Error() string {
 	return e.Msg
+}
+
+func (e *CustomError) WithValidationErrors(validationErrors interface{}) *CustomError {
+	e.ValidationErrors = validationErrors
+	return e
 }
 
 

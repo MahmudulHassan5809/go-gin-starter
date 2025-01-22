@@ -11,6 +11,7 @@ type BaseResponse struct {
 	Message  string      `json:"message"`
 	Code     int         `json:"code"`
 	MetaInfo interface{} `json:"meta_info,omitempty"`
+	ValidationErrors interface{} `json:"validation_errors,omitempty"` // New field
 }
 
 
@@ -30,6 +31,7 @@ type ResponseOptions struct {
 	Message  string
 	MetaInfo interface{}
 	Error    *errors.CustomError
+	ValidationErrors interface{}
 }
 
 
@@ -52,10 +54,13 @@ func WithMetaInfo(metaInfo interface{}) func(*ResponseOptions) {
 }
 
 
+
+
 func buildBaseResponse(success bool, defaultMessage string, defaultCode int, opts ...func(*ResponseOptions)) BaseResponse {
 	options := ResponseOptions{
 		Message:  defaultMessage,
 		MetaInfo: map[string]interface{}{},
+		ValidationErrors: map[string]interface{}{},
 	}
 
 	for _, opt := range opts {
@@ -78,6 +83,7 @@ func buildBaseResponse(success bool, defaultMessage string, defaultCode int, opt
 		Message:  message,
 		Code:     code,
 		MetaInfo: options.MetaInfo,
+		ValidationErrors: options.Error.ValidationErrors,
 	}
 }
 
@@ -92,6 +98,6 @@ func BuildSuccessResponse[T any](data T, opts ...func(*ResponseOptions)) Success
 func BuildErrorResponse(opts ...func(*ResponseOptions)) ErrorResponse {
 	return ErrorResponse{
 		BaseResponse: buildBaseResponse(false, "An unexpected error occurred", http.StatusBadRequest, opts...),
-		Data:         map[string]string{}, // Default empty object for data
+		Data:         map[string]string{},
 	}
 }
