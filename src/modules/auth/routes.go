@@ -6,11 +6,11 @@ import (
 	"gin_starter/src/modules/users"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"gorm.io/gorm"
 )
 
 
-func RegisterAuthRoutes(r *gin.RouterGroup, db *pgxpool.Pool) {
+func RegisterAuthRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	passwordHandler := security.PasswordHandler{}
 	JwtHandler := security.JWTHandler{}
 	validatorService := services.NewValidatorService()

@@ -12,23 +12,22 @@ import (
 )
 
 func main() {
-	// Load .env file
 	if err := godotenv.Load(); err != nil {
 		log.Println("Warning: .env file not found, using system environment variables")
 	}
-	db, err := db.InitDB()
+	database, err := db.InitDB()
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
-	defer db.Close()
+	defer func() {
+		sqlDB, _ := database.DB()
+		sqlDB.Close()
+	}()
 
 	router := gin.Default()
-
 	router.Use(middlewares.ErrorHandlingMiddleware())
 	router.Use(middlewares.RequestResponseLogger())
-
-	routes.RegisterRoutes(router, db)
-
+	routes.RegisterRoutes(router, database)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

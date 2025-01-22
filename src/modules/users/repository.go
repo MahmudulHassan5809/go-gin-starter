@@ -1,19 +1,18 @@
 package users
 
 import (
-	"context"
 	"errors"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"gorm.io/gorm"
 )
 
 type UserRepository interface {
-	CreateUser(user *CreateUserRequest) error
+	RegisterUser(user *RegisterUserRequest) error
 	GetUserByField(field, value string) (*User, error)
 }
 
 type userRepository struct {
-	db *pgxpool.Pool
+	db *gorm.DB
 }
 
 var validFields = map[string]bool{
@@ -22,17 +21,22 @@ var validFields = map[string]bool{
 }
 
 
-func NewUserRepository(db *pgxpool.Pool) UserRepository {
+func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) CreateUser(user *CreateUserRequest) error {
-	_, err := r.db.Exec(
-		context.Background(),
-		"INSERT INTO users (username, password, email) VALUES ($1, $2, $3)",
-		user.Username, user.Password, user.Email,
-	)
-	return err
+
+func (r *userRepository) RegisterUser(user *RegisterUserRequest) error {
+	newUser := User{
+		Username: user.Username,
+		Email:    user.Email,
+		Password: user.Password,
+		IsAdmin:  false,
+	}
+	if err := r.db.Create(&newUser).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 
@@ -40,16 +44,13 @@ func (r *userRepository) GetUserByField(field, value string) (*User, error) {
 	if !validFields[field] {
 		return nil, errors.New("invalid field name")
 	}
-	query := "SELECT id, username, password, email FROM users WHERE " + field + " = $1 LIMIT 1"
-	row := r.db.QueryRow(context.Background(), query, value)
 	var user User
-	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Email)
+	err := r.db.Where(field+" = ?", value).First(&user).Error
 	if err != nil {
-		if err.Error() == "no rows in result set" {
-			return nil, nil 
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
 		}
-		return nil, err 
+		return nil, err
 	}
-
 	return &user, nil
 }

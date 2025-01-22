@@ -8,7 +8,7 @@ import (
 )
 
 type AuthService interface {
-	RegisterUser(req *users.CreateUserRequest) error
+	RegisterUser(req *users.RegisterUserRequest) error
 	LoginUser(req *LoginRequest) (*Tokens, error)
 }
 
@@ -53,7 +53,7 @@ func (s *authService) LoginUser(req *LoginRequest) (*Tokens, error) {
 	}, nil
 }
 
-func (s *authService) RegisterUser(user *users.CreateUserRequest) error {
+func (s *authService) RegisterUser(user *users.RegisterUserRequest) error {
 	isUserExists, err := s.UserRepo.GetUserByField("username", user.Username)
 	if err != nil {
 		return err
@@ -67,5 +67,5 @@ func (s *authService) RegisterUser(user *users.CreateUserRequest) error {
 		return err
 	}
 	user.Password = string(hashedPassword)
-	return s.UserRepo.CreateUser(user)
+	return s.UserRepo.RegisterUser(user)
 }

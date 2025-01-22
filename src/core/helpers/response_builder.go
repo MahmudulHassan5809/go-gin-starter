@@ -60,7 +60,7 @@ func buildBaseResponse(success bool, defaultMessage string, defaultCode int, opt
 	options := ResponseOptions{
 		Message:  defaultMessage,
 		MetaInfo: map[string]interface{}{},
-		ValidationErrors: map[string]interface{}{},
+		
 	}
 
 	for _, opt := range opts {
@@ -69,12 +69,16 @@ func buildBaseResponse(success bool, defaultMessage string, defaultCode int, opt
 
 	message := options.Message
 	code := defaultCode
+	var validationErrors interface{} = map[string]interface{}{}
+
 	if options.Error != nil {
 		if success {
 			message = options.Message
+			
 		} else {
 			message = options.Error.Msg
 			code = options.Error.Status
+			validationErrors = options.Error.ValidationErrors
 		}
 	}
 
@@ -83,7 +87,7 @@ func buildBaseResponse(success bool, defaultMessage string, defaultCode int, opt
 		Message:  message,
 		Code:     code,
 		MetaInfo: options.MetaInfo,
-		ValidationErrors: options.Error.ValidationErrors,
+		ValidationErrors: validationErrors,
 	}
 }
 

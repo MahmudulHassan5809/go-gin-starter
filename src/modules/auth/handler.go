@@ -41,7 +41,7 @@ func (h *AuthHandler) LoginHandler(ctx *gin.Context) {
 }
 
 func (h *AuthHandler) Register(ctx *gin.Context) {
-	var createdUser users.CreateUserRequest
+	var createdUser users.RegisterUserRequest
 	if err := ctx.ShouldBindJSON(&createdUser); err != nil {
 		ctx.Error(errors.BadRequestError(err.Error()))
 		return
