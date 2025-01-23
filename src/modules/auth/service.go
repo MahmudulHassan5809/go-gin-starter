@@ -1,6 +1,9 @@
 package auth
 
 import (
+	"context"
+	"fmt"
+	"gin_starter/src/core/cache"
 	"gin_starter/src/core/common"
 	"gin_starter/src/core/errors"
 	"gin_starter/src/core/security"
@@ -16,14 +19,17 @@ type authService struct {
 	UserRepo users.UserRepository
 	PasswordHasher security.PasswordHandler
 	JwtHandler security.JWTHandler
+	CacheManager   *cache.CacheManager
 }
 
-func NewAuthService(repo users.UserRepository, PasswordHasher security.PasswordHandler, JwtHandler security.JWTHandler) AuthService {
-	return &authService{UserRepo: repo, PasswordHasher: PasswordHasher, JwtHandler: JwtHandler,}
+func NewAuthService(repo users.UserRepository, PasswordHasher security.PasswordHandler, JwtHandler security.JWTHandler, CacheManager *cache.CacheManager) AuthService {
+	return &authService{UserRepo: repo, PasswordHasher: PasswordHasher, JwtHandler: JwtHandler, CacheManager: CacheManager}
 }
 
 
 func (s *authService) LoginUser(req *LoginRequest) (*Tokens, error) {
+	ctx := context.Background()
+	
 	user, err := s.UserRepo.GetUserByField("username", req.Username)
 	if err != nil || user == nil {
 		return nil, errors.UnauthorizedError("invalid username or password")
@@ -46,6 +52,14 @@ func (s *authService) LoginUser(req *LoginRequest) (*Tokens, error) {
 	if err != nil {
 		return nil, errors.InternalServerError("error generating refresh token")
 	}
+
+	cacheKey := cache.CacheTag.Format("USER_DATA_%v", fmt.Sprint(user.ID))
+	userData := map[string]string{
+		"username": req.Username,
+		"email":    user.Email,
+		"id":       fmt.Sprint(user.ID),
+	}
+	s.CacheManager.HMSet(ctx, cacheKey, userData)
 
 	return &Tokens{
 		AccessToken:  accessToken,
