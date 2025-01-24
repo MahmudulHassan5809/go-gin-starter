@@ -37,7 +37,7 @@ func main() {
 		sqlDB.Close()
 	}()
 	
-	redisBackend := cache.NewRedisBackend("redis://:foobared@127.0.0.1:6379")
+	redisBackend := cache.NewRedisBackend(os.Getenv("REDIS_URL"))
 	cache.SetCacheManager(redisBackend)
 
 	router := gin.Default()

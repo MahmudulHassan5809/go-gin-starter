@@ -2,12 +2,14 @@ package health
 
 import (
 	"gin_starter/src/core/cache"
+	"gin_starter/src/core/middlewares"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-// RegisterHealthRoutes sets up health-check routes
+
 func RegisterHealthRoutes(r *gin.RouterGroup,) {
 	CacheManager := cache.GetCacheManager()
-	r.GET("/", cache.CacheResponse(CacheManager, "HEALTH", 60, HealthCheckHandler))
+	r.GET("/", middlewares.RateLimit(3, 10*time.Second), cache.CacheResponse(CacheManager, "HEALTH", 60, HealthCheckHandler))
 }
