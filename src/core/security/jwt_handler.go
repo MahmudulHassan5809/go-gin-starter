@@ -47,9 +47,12 @@ func (JWTHandler) Encode(tokenType string, payload interface{}) (string, error) 
 	claims := jwt.MapClaims{}
 	switch p := payload.(type) {
 	case common.AccessTokenPayload:
-		claims["username"] = p.Username
+		claims["user_id"] = p.UserID
+		claims["email"] = p.Email
+		claims["sub"] = p.Sub
 	case common.RefreshTokenPayload:
-		claims["username"] = p.Username
+		claims["user_id"] = p.UserID
+		claims["sub"] = p.Sub
 	default:
 		return "", errors.New("invalid payload type")
 	}

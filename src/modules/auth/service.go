@@ -40,26 +40,31 @@ func (s *authService) LoginUser(req *LoginRequest) (*Tokens, error) {
 	}
 
 	accessToken, err := security.JWTHandler.Encode(s.JwtHandler, "access", common.AccessTokenPayload{
-		Username: user.Username,
+		UserID: fmt.Sprint(user.ID),
+		Email:  user.Email,
+		Sub: "ACCESS_TOKEN",
 	})
 	if err != nil {
 		return nil, errors.InternalServerError("error generating access token")
 	}
 
 	refreshToken, err := security.JWTHandler.Encode(s.JwtHandler, "refresh", common.RefreshTokenPayload{
-		Username: user.Username,
+		UserID: fmt.Sprint(user.ID),
+		Sub: "REFRESH_TOKEN",
 	})
 	if err != nil {
 		return nil, errors.InternalServerError("error generating refresh token")
 	}
 
-	cacheKey := cache.CacheTag.Format("USER_DATA_%v", fmt.Sprint(user.ID))
+	cacheKey := cache.CacheTag.Format(cache.UserData, fmt.Sprint(user.ID))
 	userData := map[string]string{
 		"username": req.Username,
 		"email":    user.Email,
 		"id":       fmt.Sprint(user.ID),
 	}
 	s.CacheManager.HMSet(ctx, cacheKey, userData)
+	s.CacheManager.Set(ctx, cache.UserAccessToken.Format(fmt.Sprint(user.ID)), accessToken, 20)
+	s.CacheManager.Set(ctx, cache.UserRefreshToken.Format(fmt.Sprint(user.ID)), refreshToken, 20)
 
 	return &Tokens{
 		AccessToken:  accessToken,
