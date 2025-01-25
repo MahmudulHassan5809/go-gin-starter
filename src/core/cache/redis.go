@@ -39,8 +39,8 @@ func (r *RedisBackend) HGetAll(ctx context.Context, key string) (map[string]stri
     return r.client.HGetAll(ctx, key).Result()
 }
 
-func (r *RedisBackend) HMSet(ctx context.Context, key string, fields map[string]string) error {
-    return r.client.HSet(ctx, key, fields).Err()
+func (r *RedisBackend) HMSet(ctx context.Context, key string, fields map[string]string, ttl int) error {
+    return r.client.HSet(ctx, key, fields, time.Duration(ttl)*time.Second).Err()
 }
 
 func (r *RedisBackend) GetAndDelete(ctx context.Context, key string) (string, error) {

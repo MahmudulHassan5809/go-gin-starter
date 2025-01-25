@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"context"
-	"fmt"
 	"gin_starter/src/core/cache"
 	"gin_starter/src/core/common"
 	"gin_starter/src/core/errors"
@@ -35,8 +34,9 @@ func (j *JwtMiddleware) JwtMiddleware() gin.HandlerFunc {
 		valid, claims, err := j.VerifyJWT(token)
 
 		if err != nil || !valid {
-			c.AbortWithStatusJSON(401, gin.H{"error": "invalid or expired token"})
-			return
+			c.Error(err)
+            c.Abort()
+            return
 		}
 
 		c.Set("user_id", claims.UserID)
@@ -65,7 +65,7 @@ func (j *JwtMiddleware) VerifyJWT(token string) (bool, *common.AccessTokenPayloa
 		return false, nil, errors.UnauthorizedError("token mismatch or not found in cache")
 	}
 
-	userDataCacheKey := fmt.Sprintf("USER_DATA_%v", claims.UserID)
+	userDataCacheKey := cache.UserData.Format(claims.UserID)
 	userData, err := j.CacheManager.HGetAll(context.Background(), userDataCacheKey)
 	if err != nil || userData == nil {
 		return false, nil, errors.UnauthorizedError("user data not found in cache")

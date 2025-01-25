@@ -62,9 +62,9 @@ func (s *authService) LoginUser(req *LoginRequest) (*Tokens, error) {
 		"email":    user.Email,
 		"id":       fmt.Sprint(user.ID),
 	}
-	s.CacheManager.HMSet(ctx, cacheKey, userData)
-	s.CacheManager.Set(ctx, cache.UserAccessToken.Format(fmt.Sprint(user.ID)), accessToken, 20)
-	s.CacheManager.Set(ctx, cache.UserRefreshToken.Format(fmt.Sprint(user.ID)), refreshToken, 20)
+	s.CacheManager.HMSet(ctx, cacheKey, userData, security.AccessExpireMinutes)
+	s.CacheManager.Set(ctx, cache.UserAccessToken.Format(fmt.Sprint(user.ID)), accessToken, security.AccessExpireMinutes)
+	s.CacheManager.Set(ctx, cache.UserRefreshToken.Format(fmt.Sprint(user.ID)), refreshToken, security.RefreshExpireMinutes)
 
 	return &Tokens{
 		AccessToken:  accessToken,

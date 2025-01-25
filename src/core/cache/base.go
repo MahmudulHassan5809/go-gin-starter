@@ -8,6 +8,6 @@ type CacheBackend interface {
     Set(ctx context.Context, key string, value string, ttl int) error
     Delete(ctx context.Context, key string) error
     HGetAll(ctx context.Context, key string) (map[string]string, error)
-    HMSet(ctx context.Context, key string, fields map[string]string) error
+    HMSet(ctx context.Context, key string, fields map[string]string, ttl int) error
     GetAndDelete(ctx context.Context, key string) (string, error)
 }

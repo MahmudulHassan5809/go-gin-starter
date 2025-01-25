@@ -9,20 +9,23 @@ import (
 )
 
 func ErrorHandlingMiddleware() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		ctx.Next()
-		if len(ctx.Errors) > 0 {
-			err := ctx.Errors.Last()
-			if customErr, ok := err.Err.(*errors.CustomError); ok {
-				ctx.JSON(customErr.Status, helpers.BuildErrorResponse(
-					helpers.WithError(customErr),
-				))
-			} else {
-				ctx.JSON(http.StatusInternalServerError, helpers.BuildErrorResponse(
-					helpers.WithError(errors.InternalServerError("internal server error")),
-				))
-			}
-			return
-		}
-	}
+    return func(ctx *gin.Context) {
+        ctx.Next()
+
+        // Handle errors after all middlewares and handlers
+        if len(ctx.Errors) > 0 {
+            err := ctx.Errors.Last()
+            if customErr, ok := err.Err.(*errors.CustomError); ok {
+                ctx.AbortWithStatusJSON(customErr.Status, helpers.BuildErrorResponse(
+                    helpers.WithError(customErr),
+                ))
+            } else {
+                ctx.AbortWithStatusJSON(http.StatusInternalServerError, helpers.BuildErrorResponse(
+                    helpers.WithError(errors.InternalServerError("internal server error")),
+                ))
+            }
+            return
+        }
+    }
 }
+

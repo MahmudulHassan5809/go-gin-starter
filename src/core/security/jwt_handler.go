@@ -19,8 +19,8 @@ type JWTHandler struct{}
 var (
 	secretKey           = os.Getenv("JWT_SECRET")
 	algorithm           = os.Getenv("JWT_ALGORITHM")
-	accessExpireMinutes = getEnvAsInt("ACCESS_TOKEN_EXPIRE_MINUTES")
-	refreshExpireMinutes = getEnvAsInt("REFRESH_TOKEN_EXPIRE_MINUTES")
+	AccessExpireMinutes = getEnvAsInt("ACCESS_TOKEN_EXPIRE_MINUTES")
+	RefreshExpireMinutes = getEnvAsInt("REFRESH_TOKEN_EXPIRE_MINUTES")
 )
 
 
@@ -37,9 +37,9 @@ func getEnvAsInt(key string) int {
 func (JWTHandler) Encode(tokenType string, payload interface{}) (string, error) {
 	var expireMinutes int
 	if tokenType == "access" {
-		expireMinutes = accessExpireMinutes
+		expireMinutes = AccessExpireMinutes
 	} else if tokenType == "refresh" {
-		expireMinutes = refreshExpireMinutes
+		expireMinutes = RefreshExpireMinutes
 	} else {
 		return "", errors.New("invalid token type")
 	}

@@ -48,6 +48,6 @@ func (cm *CacheManager) HGetAll(ctx context.Context, key string) (map[string]str
 }
 
 
-func (cm *CacheManager) HMSet(ctx context.Context, key string, fields map[string]string) error {
-    return cm.backend.HMSet(ctx, key, fields)
+func (cm *CacheManager) HMSet(ctx context.Context, key string, fields map[string]string, ttl int) error {
+    return cm.backend.HMSet(ctx, key, fields, ttl)
 }
